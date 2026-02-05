@@ -40,7 +40,7 @@ npm install
 npm run dev
 ```
 
-6. Open in browser
+5. Open in browser
 
 By default, Vite serves at:
 
