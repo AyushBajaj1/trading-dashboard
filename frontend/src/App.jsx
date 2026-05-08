@@ -282,6 +282,57 @@ function TradeLog({ trades }) {
   );
 }
 
+// ── Hyperparam config ─────────────────────────────────────────────────────────
+const HYPERPARAM_DEFS = {
+  sma_crossover: [
+    { key: 'sma_short', label: 'Short window', min: 5,  max: 100, step: 1,   default: 20 },
+    { key: 'sma_long',  label: 'Long window',  min: 10, max: 200, step: 5,   default: 50 },
+  ],
+  rsi: [
+    { key: 'rsi_period',     label: 'Period',     min: 5,  max: 50,  step: 1,  default: 14 },
+    { key: 'rsi_oversold',   label: 'Oversold',   min: 10, max: 45,  step: 5,  default: 30 },
+    { key: 'rsi_overbought', label: 'Overbought', min: 55, max: 90,  step: 5,  default: 70 },
+  ],
+  mean_reversion: [
+    { key: 'bb_period', label: 'Period',  min: 5,   max: 50,  step: 1,   default: 20  },
+    { key: 'bb_std',    label: 'Std dev', min: 0.5, max: 3.5, step: 0.5, default: 2.0 },
+  ],
+  ml_random_forest: [
+    { key: 'n_estimators', label: 'Estimators', min: 10, max: 500, step: 10, default: 100 },
+    { key: 'max_depth',    label: 'Max depth',  min: 2,  max: 30,  step: 1,  default: 10  },
+    { key: 'train_split',  label: 'Train %',    min: 50, max: 80,  step: 5,  default: 70  },
+  ],
+};
+
+const DEFAULT_HYPERPARAMS = Object.values(HYPERPARAM_DEFS)
+  .flat()
+  .reduce((acc, p) => ({ ...acc, [p.key]: p.default }), {});
+
+// ── Hyperparams panel ─────────────────────────────────────────────────────────
+function HyperParams({ strategy, params, onChange }) {
+  const defs = HYPERPARAM_DEFS[strategy] ?? [];
+  if (!defs.length) return null;
+  return (
+    <section className="flex flex-col gap-2">
+      <p className="text-ink3 text-[11px] uppercase tracking-wide">Hyperparameters</p>
+      <div className="flex flex-col gap-2">
+        {defs.map(d => (
+          <div key={d.key} className="flex items-center justify-between gap-2">
+            <label className="text-ink2 text-xs flex-1">{d.label}</label>
+            <input
+              type="number"
+              value={params[d.key] ?? d.default}
+              onChange={e => onChange(d.key, Number(e.target.value))}
+              min={d.min} max={d.max} step={d.step}
+              className="w-20 bg-surface border border-border2 rounded-md px-2 py-1 text-xs text-ink text-right outline-none focus:border-ink3 transition-colors font-mono"
+            />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 // ── Main app ──────────────────────────────────────────────────────────────────
 export default function App() {
   const [tickers, setTickers]     = useState([]);
@@ -290,9 +341,13 @@ export default function App() {
   const [strategy, setStrategy]   = useState('sma_crossover');
   const [capital, setCapital]     = useState(10000);
   const [days, setDays]           = useState(500);
+  const [hyperparams, setHyperparams] = useState(DEFAULT_HYPERPARAMS);
   const [loading, setLoading]     = useState(false);
   const [results, setResults]     = useState(null);
   const [error, setError]         = useState(null);
+
+  const setParam = (key, value) =>
+    setHyperparams(prev => ({ ...prev, [key]: value }));
 
   useEffect(() => {
     Promise.all([
@@ -309,7 +364,7 @@ export default function App() {
       const res = await fetch(`${API}/backtest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ strategy, ticker, capital, days }),
+        body: JSON.stringify({ strategy, ticker, capital, days, ...hyperparams }),
       });
       if (!res.ok) throw new Error((await res.json()).detail ?? 'Backtest failed');
       setResults(await res.json());
@@ -383,9 +438,12 @@ export default function App() {
               </div>
             </section>
 
-            {/* Params */}
+            {/* Strategy hyperparams */}
+            <HyperParams strategy={strategy} params={hyperparams} onChange={setParam} />
+
+            {/* General params */}
             <section className="flex flex-col gap-3">
-              <p className="text-ink3 text-[11px] uppercase tracking-wide">Parameters</p>
+              <p className="text-ink3 text-[11px] uppercase tracking-wide">General</p>
               <NumberInput label="Capital" value={capital} onChange={setCapital} prefix="$" min={1000} step={1000} />
               <NumberInput label="Days" value={days} onChange={setDays} min={100} max={2000} step={100} />
             </section>
@@ -461,7 +519,7 @@ export default function App() {
                       tickFormatter={fmtDate} />
                     <YAxis stroke="transparent" tick={{ fill: '#555', fontSize: 10 }}
                       tickLine={false} tickFormatter={fmtK} width={48} />
-                    <Tooltip content={<PriceTooltip signalMap={results.signal_map} />} />
+                    <Tooltip content={<PriceTooltip signalMap={results.signal_map} />} wrapperStyle={{ transition: 'none' }} />
                     <Line type="monotone" dataKey="price" stroke="#555555" strokeWidth={1.5}
                       dot={(props) => <SignalDot {...props} signalMap={results.signal_map} />}
                       activeDot={{ r: 3, fill: '#e8e8e8', strokeWidth: 0 }} />
@@ -488,7 +546,7 @@ export default function App() {
                     <YAxis stroke="transparent" tick={{ fill: '#555', fontSize: 10 }}
                       tickLine={false} tickFormatter={fmtK} width={48} />
                     <ReferenceLine y={capital} stroke="#2a2a2a" strokeDasharray="4 3" />
-                    <Tooltip content={<EquityTooltip />} />
+                    <Tooltip content={<EquityTooltip />} wrapperStyle={{ transition: 'none' }} />
                     <Area type="monotone" dataKey="value" stroke={eqColor} strokeWidth={1.5}
                       fill={`url(#${gradId})`} dot={false}
                       activeDot={{ r: 3, fill: eqColor, strokeWidth: 0 }} />
