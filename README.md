@@ -1,8 +1,7 @@
 # Algo Trading Backtest
 
-A dark-themed backtesting dashboard. Pick a stock, choose a strategy, configure parameters, and see the results — equity curve, trade markers on the price chart, and a full trade log.
 
-![screenshot](docs/screenshot.png)
+
 
 ## Stack
 
