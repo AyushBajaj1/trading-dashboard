@@ -115,6 +115,7 @@ class TradingStrategy:
         self.position  = 0
         self.trades    = []
         self.equity_curve = []
+        self.equity_dates = []
 
     def calculate_metrics(self) -> dict:
         if not self.equity_curve:
@@ -180,6 +181,7 @@ class SMACrossoverStrategy(TradingStrategy):
                 self.position = 0
 
             self.equity_curve.append(self.capital + self.position * price)
+            self.equity_dates.append(date)
         return self
 
 
@@ -214,6 +216,7 @@ class RSIStrategy(TradingStrategy):
                 self.position = 0
 
             self.equity_curve.append(self.capital + self.position * price)
+            self.equity_dates.append(date)
         return self
 
 
@@ -249,6 +252,7 @@ class MeanReversionStrategy(TradingStrategy):
                 self.position = 0
 
             self.equity_curve.append(self.capital + self.position * price)
+            self.equity_dates.append(date)
         return self
 
 
@@ -306,6 +310,7 @@ class MLStrategy(TradingStrategy):
                 self.position = 0
 
             self.equity_curve.append(self.capital + self.position * price)
+            self.equity_dates.append(date)
 
         self.accuracy = round(model.score(X_test_s, y[split:]) * 100, 2)
         return self
@@ -397,8 +402,8 @@ def backtest(req: BacktestRequest):
     ]
 
     equity_data = [
-        {"date": data.iloc[min(i, len(data) - 1)]["date"], "value": round(v, 2)}
-        for i, v in enumerate(strategy.equity_curve)
+        {"date": d, "value": round(v, 2)}
+        for d, v in zip(strategy.equity_dates, strategy.equity_curve)
     ]
 
     signal_map = {t["date"]: t["type"] for t in strategy.trades}

@@ -1,14 +1,13 @@
 # Algo Trading Backtest
 
-
-
+A web app for backtesting algorithmic trading strategies against real historical stock and crypto price data.
 
 ## Stack
 
 | Layer | Tech |
 |---|---|
 | Frontend | React 19, Vite, Tailwind CSS v4, Recharts |
-| Backend | FastAPI, pandas, NumPy, scikit-learn |
+| Backend | FastAPI, pandas, NumPy, scikit-learn, yfinance |
 
 ## Getting started
 
@@ -33,7 +32,7 @@ npm run dev
 
 ## Features
 
-**Stocks** — 14 tickers (AAPL, NVDA, TSLA, BTC, SPY, …). Each ticker seeds a deterministic synthetic OHLCV series, so results are reproducible. Volatile tickers (TSLA, BTC, NVDA, META) get higher drift and volatility.
+**Stocks** — 14 tickers across equities, ETFs, and crypto (AAPL, NVDA, TSLA, BTC, SPY, …). Real historical OHLCV data is fetched from Yahoo Finance and cached for the session.
 
 **Strategies**
 
@@ -44,7 +43,9 @@ npm run dev
 | Bollinger Bands | Mean Rev. | Buy at lower band, sell at middle band |
 | Random Forest | ML | Random Forest classifier trained on price/volume features; predicts next-day direction |
 
-**Metrics** — Total return, final portfolio value, Sharpe ratio, max drawdown, win rate, trade count. ML strategies also show test-set accuracy.
+**Hyperparameters** — Each strategy exposes tunable parameters (SMA windows, RSI thresholds, Bollinger std dev, RF estimators/depth/train split) configurable from the sidebar.
+
+**Metrics** — Total return, final portfolio value, Sharpe ratio, max drawdown, win rate, trade count. ML strategy also shows test-set accuracy.
 
 **Charts** — Price chart with ▲/▼ markers at exact buy/sell dates, plus a separate equity curve with a reference line at starting capital.
 
@@ -72,12 +73,14 @@ npm run dev
 
 `strategy` options: `sma_crossover`, `rsi`, `mean_reversion`, `ml_random_forest`
 
+Optional hyperparameter fields: `sma_short`, `sma_long`, `rsi_period`, `rsi_oversold`, `rsi_overbought`, `bb_period`, `bb_std`, `n_estimators`, `max_depth`, `train_split`
+
 ## Project structure
 
 ```
 algo-trading/
 ├── backend/
-│   ├── main.py          # FastAPI app — data gen, indicators, strategies, routes
+│   ├── main.py          # FastAPI app — data fetching, indicators, strategies, routes
 │   └── requirements.txt
 └── frontend/
     ├── src/
