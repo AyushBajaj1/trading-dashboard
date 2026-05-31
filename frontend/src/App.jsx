@@ -126,11 +126,26 @@ function StrategyCard({ s, selected, onSelect }) {
   );
 }
 
+// ── Info tooltip ──────────────────────────────────────────────────────────────
+function InfoTip({ text }) {
+  return (
+    <span className="relative group inline-flex items-center ml-1">
+      <span className="w-3 h-3 rounded-full border border-ink3/50 text-ink3 text-[8px] flex items-center justify-center cursor-default select-none font-bold leading-none">?</span>
+      <span className="pointer-events-none absolute top-full left-0 mt-1.5 z-50 hidden group-hover:block w-44 bg-surface2 border border-border2 rounded-lg px-2.5 py-2 text-[11px] text-ink2 shadow-xl leading-relaxed whitespace-normal">
+        {text}
+      </span>
+    </span>
+  );
+}
+
 // ── Number inputs ─────────────────────────────────────────────────────────────
-function NumberInput({ label, value, onChange, prefix, min, max, step }) {
+function NumberInput({ label, value, onChange, prefix, min, max, step, tip }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-ink3 text-[11px] uppercase tracking-wide">{label}</label>
+      <label className="text-ink3 text-[11px] uppercase tracking-wide flex items-center">
+        {label}
+        {tip && <InfoTip text={tip} />}
+      </label>
       <div className="relative">
         {prefix && (
           <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink3 text-xs pointer-events-none">
@@ -285,22 +300,32 @@ function TradeLog({ trades }) {
 // ── Hyperparam config ─────────────────────────────────────────────────────────
 const HYPERPARAM_DEFS = {
   sma_crossover: [
-    { key: 'sma_short', label: 'Short window', min: 5,  max: 100, step: 1,   default: 20 },
-    { key: 'sma_long',  label: 'Long window',  min: 10, max: 200, step: 5,   default: 50 },
+    { key: 'sma_short', label: 'Short window', min: 5,  max: 100, step: 1,   default: 20,
+      tip: 'Faster moving average. A buy signal fires when this crosses above the long window.' },
+    { key: 'sma_long',  label: 'Long window',  min: 10, max: 200, step: 5,   default: 50,
+      tip: 'Slower moving average. A sell signal fires when the short window crosses back below this.' },
   ],
   rsi: [
-    { key: 'rsi_period',     label: 'Period',     min: 5,  max: 50,  step: 1,  default: 14 },
-    { key: 'rsi_oversold',   label: 'Oversold',   min: 10, max: 45,  step: 5,  default: 30 },
-    { key: 'rsi_overbought', label: 'Overbought', min: 55, max: 90,  step: 5,  default: 70 },
+    { key: 'rsi_period',     label: 'Period',     min: 5,  max: 50,  step: 1,  default: 14,
+      tip: 'Number of days used to calculate RSI. Lower = more sensitive to recent price swings.' },
+    { key: 'rsi_oversold',   label: 'Oversold',   min: 10, max: 45,  step: 5,  default: 30,
+      tip: 'Buy when RSI drops below this level. Under 30 typically means the asset is oversold.' },
+    { key: 'rsi_overbought', label: 'Overbought', min: 55, max: 90,  step: 5,  default: 70,
+      tip: 'Sell when RSI rises above this level. Over 70 typically means the asset is overbought.' },
   ],
   mean_reversion: [
-    { key: 'bb_period', label: 'Period',  min: 5,   max: 50,  step: 1,   default: 20  },
-    { key: 'bb_std',    label: 'Std dev', min: 0.5, max: 3.5, step: 0.5, default: 2.0 },
+    { key: 'bb_period', label: 'Period',  min: 5,   max: 50,  step: 1,   default: 20,
+      tip: 'Lookback period for the moving average and standard deviation used to build the bands.' },
+    { key: 'bb_std',    label: 'Std dev', min: 0.5, max: 3.5, step: 0.5, default: 2.0,
+      tip: 'How many standard deviations wide the bands are. Higher = wider bands, fewer but stronger signals.' },
   ],
   ml_random_forest: [
-    { key: 'n_estimators', label: 'Estimators', min: 10, max: 500, step: 10, default: 100 },
-    { key: 'max_depth',    label: 'Max depth',  min: 2,  max: 30,  step: 1,  default: 10  },
-    { key: 'train_split',  label: 'Train %',    min: 50, max: 80,  step: 5,  default: 70  },
+    { key: 'n_estimators', label: 'Estimators', min: 10, max: 500, step: 10, default: 100,
+      tip: 'Number of decision trees in the forest. More trees improve accuracy but take longer to run.' },
+    { key: 'max_depth',    label: 'Max depth',  min: 2,  max: 30,  step: 1,  default: 10,
+      tip: 'How deep each decision tree can grow. Too high risks memorizing the training data (overfitting).' },
+    { key: 'train_split',  label: 'Train %',    min: 50, max: 80,  step: 5,  default: 70,
+      tip: 'Percentage of historical data used to train the model. The rest is used to run the backtest.' },
   ],
 };
 
@@ -318,7 +343,10 @@ function HyperParams({ strategy, params, onChange }) {
       <div className="flex flex-col gap-2">
         {defs.map(d => (
           <div key={d.key} className="flex items-center justify-between gap-2">
-            <label className="text-ink2 text-xs flex-1">{d.label}</label>
+            <label className="text-ink2 text-xs flex-1 flex items-center">
+              {d.label}
+              {d.tip && <InfoTip text={d.tip} />}
+            </label>
             <input
               type="number"
               value={params[d.key] ?? d.default}
@@ -444,8 +472,10 @@ export default function App() {
             {/* General params */}
             <section className="flex flex-col gap-3">
               <p className="text-ink3 text-[11px] uppercase tracking-wide">General</p>
-              <NumberInput label="Capital" value={capital} onChange={setCapital} prefix="$" min={1000} step={1000} />
-              <NumberInput label="Days" value={days} onChange={setDays} min={100} max={2000} step={100} />
+              <NumberInput label="Capital" value={capital} onChange={setCapital} prefix="$" min={1000} step={1000}
+                tip="Starting cash for the backtest. The strategy buys as many whole shares as this allows." />
+              <NumberInput label="Days" value={days} onChange={setDays} min={100} max={2000} step={100}
+                tip="How many trading days of historical data to use. ~252 = 1 year, ~500 = 2 years." />
             </section>
           </div>
 
@@ -490,13 +520,16 @@ export default function App() {
                     cls: m.max_drawdown < -10 ? 'text-red' : '' },
                   { label: 'Win Rate',     value: `${m.win_rate}%`,
                     cls: m.win_rate > 55 ? 'text-green' : m.win_rate < 40 ? 'text-red' : '' },
-                  { label: 'Trades',       value: m.total_trades },
+                  { label: 'Closed Trades', value: m.total_trades,
+                    tip: 'Completed buy+sell round-trips. Open positions at period end are not counted.' },
                   results.accuracy != null
                     ? { label: 'ML Accuracy', value: `${results.accuracy}%`, cls: 'text-violet' }
                     : { label: 'Strategy',    value: results.strategy_name.split(' (')[0] },
                 ].map((s, i, arr) => (
                   <div key={i} className={clx('flex flex-col gap-1 px-6', i < arr.length - 1 && 'border-r border-border')}>
-                    <span className="text-ink3 text-[11px] whitespace-nowrap">{s.label}</span>
+                    <span className="text-ink3 text-[11px] whitespace-nowrap flex items-center">
+                      {s.label}{s.tip && <InfoTip text={s.tip} />}
+                    </span>
                     <span className={clx('font-mono font-bold text-sm whitespace-nowrap', s.cls || 'text-ink')}>{s.value}</span>
                   </div>
                 ))}
