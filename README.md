@@ -1,15 +1,12 @@
-# Algo Trading Backtest
+# Trading Dashboard for Backtesting
 
 A web app for backtesting algorithmic trading strategies against real historical stock and crypto price data.
 
 ## Stack
+### Frontend: React 19, Vite, Tailwind CSS, Recharts 
+### Backend: FastAPI, pandas, NumPy, scikit-learn, yfinance
 
-| Layer | Tech |
-|---|---|
-| Frontend | React 19, Vite, Tailwind CSS v4, Recharts |
-| Backend | FastAPI, pandas, NumPy, scikit-learn, yfinance |
-
-## Getting started
+## Installation
 
 ### Backend
 
@@ -20,7 +17,6 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 # → http://localhost:8000
 ```
-
 ### Frontend
 
 ```bash
@@ -31,11 +27,9 @@ npm run dev
 ```
 
 ## Features
-
-**Stocks** — 14 tickers across equities, ETFs, and crypto (AAPL, NVDA, TSLA, BTC, SPY, …). Real historical OHLCV data is fetched from Yahoo Finance and cached for the session.
+**Stocks** — 14 tickers across equities, ETFs, and crypto (AAPL, NVDA, TSLA, BTC, SPY, …). Real historical (Open, High, Low, Close, Volume) data is fetched from Yahoo Finance and cached for the session.
 
 **Strategies**
-
 | Strategy | Type | Signal |
 |---|---|---|
 | SMA Crossover | Trend | Buy when 20-day SMA crosses above 50-day SMA, sell on cross-below |
@@ -80,12 +74,12 @@ Optional hyperparameter fields: `sma_short`, `sma_long`, `rsi_period`, `rsi_over
 ```
 algo-trading/
 ├── backend/
-│   ├── main.py          # FastAPI app — data fetching, indicators, strategies, routes
+│   ├── main.py         
 │   └── requirements.txt
 └── frontend/
     ├── src/
-    │   ├── App.jsx      # Entire UI — sidebar, charts, stats, trade log
-    │   └── index.css    # Tailwind v4 import + @theme custom tokens
+    │   ├── App.jsx      
+    │   └── index.css    
     ├── vite.config.js
     └── package.json
 ```
