@@ -27,7 +27,7 @@ npm run dev
 ```
 
 ## Features
-**Stocks** — 14 tickers across equities, ETFs, and crypto (AAPL, NVDA, TSLA, BTC, SPY, …). Real historical (Open, High, Low, Close, Volume) data is fetched from Yahoo Finance and cached for the session.
+**Stocks** — 14 tickers across equities, ETFs, and crypto (AAPL, NVDA, TSLA, BTC, SPY, …). Historical data for these equities is then fetched from Yahoo Finance and cached for the session.
 
 **Strategies**
 | Strategy | Type | Signal |
