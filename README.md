@@ -3,8 +3,8 @@
 A web app for backtesting algorithmic trading strategies against real historical stock and crypto price data.
 
 ## Stack
-### Frontend: React 19, Vite, Tailwind CSS, Recharts 
-### Backend: FastAPI, pandas, NumPy, scikit-learn, yfinance
+#### Frontend: React 19, Vite, Tailwind CSS, Recharts 
+#### Backend: FastAPI, pandas, NumPy, scikit-learn, yfinance
 
 ## Installation
 
@@ -41,7 +41,7 @@ npm run dev
 
 **Metrics** — Total return, final portfolio value, Sharpe ratio, max drawdown, win rate, trade count. ML strategy also shows test-set accuracy.
 
-**Charts** — Price chart with ▲/▼ markers at exact buy/sell dates, plus a separate equity curve with a reference line at starting capital.
+**Charts** — Price chart with markers at exact buy/sell dates, plus a separate equity curve with a reference line at starting capital.
 
 **Trade log** — Every trade with date, side, price, shares, total value, P&L, and indicator value.
 
